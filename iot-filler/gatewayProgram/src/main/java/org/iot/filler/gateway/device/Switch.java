@@ -5,7 +5,9 @@ public interface Switch {
 
 	public void off();
 
-	public void blink(int count);
+	public void blinkOn();
+	
+	public void blinkOff();
 
 	public void GPIOShutdown();
 }

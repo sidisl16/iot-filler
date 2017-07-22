@@ -13,6 +13,7 @@ public class BulbSwitch implements Switch {
 	private final GpioController gpio;
 	private final GpioPinDigitalOutput pin;
 	private static Logger logger = Logger.getLogger(BulbSwitch.class);
+	private BlinkThread blinkThread;
 
 	public BulbSwitch() {
 		logger.info("Initializing GPIO");
@@ -39,22 +40,69 @@ public class BulbSwitch implements Switch {
 		}
 	}
 
-	public void blink(int count) {
-		count = count * 2;
-		logger.info("Bulb blinking: [" + (count/2) + " times]");
-		for (int i = 0; i < count; i++) {
-			pin.toggle();
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+	public void blinkOn() {
+		blinkExecutor(true);
+	}
+
+	public void blinkOff() {
+		blinkExecutor(false);
 	}
 
 	public void GPIOShutdown() {
 		gpio.shutdown();
 		logger.info("GPIO ShuttDown Completed!");
+	}
+
+	private void blinkExecutor(boolean running) {
+		if (running) {
+			if (blinkThread != null && blinkThread.isAlive() && blinkThread.isRunning()) {
+				logger.warn("Bulb already blinking!");
+			} else {
+				logger.info("Bulb blinking!");
+				blinkThread = new BlinkThread();
+				blinkThread.setRunning(true);
+				blinkThread.start();
+			}
+		} else {
+			logger.info("Stop Bulb blinking!");
+			if (blinkThread.isRunning()) {
+				blinkThread.setRunning(false);
+				blinkThread = null;
+			} else {
+				logger.warn("Bulb is not blinking!");
+			}
+		}
+	}
+
+	private class BlinkThread extends Thread {
+
+		private boolean running;
+
+		@Override
+		public void run() {
+			while (running) {
+				pin.toggle();
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (pin.isHigh()) {
+				pin.low();
+			}
+
+		}
+
+		public boolean isRunning() {
+			return running;
+		}
+
+		public void setRunning(boolean running) {
+			this.running = running;
+		}
+
 	}
 
 }

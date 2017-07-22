@@ -12,6 +12,7 @@ public class MobileAppSwitchResource extends CoapResource {
 	private static final String MOBILE_APP_SWITCH_RESOURCE = "mobileSwitch";
 	private static final Logger logger = Logger.getLogger(MobileAppSwitchResource.class);
 	private Switch lightSwitch;
+	private static final String[] OPERATIONS = { "ON", "OFF", "BLINKON", "BLINKOFF" };
 
 	public MobileAppSwitchResource() {
 		super(MOBILE_APP_SWITCH_RESOURCE);
@@ -37,17 +38,19 @@ public class MobileAppSwitchResource extends CoapResource {
 			exchange.respond(ResponseCode.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	private void processMessage(String message) throws Exception {
-		if(message.equalsIgnoreCase("on")) {
+		if (message.equalsIgnoreCase(OPERATIONS[0])) {
 			lightSwitch.On();
-		}else if(message.equalsIgnoreCase("off")) {
+		} else if (message.equalsIgnoreCase(OPERATIONS[1])) {
 			lightSwitch.off();
-		}else if(message.equalsIgnoreCase("blink")) {
-			lightSwitch.blink(5);
-		}else {
-			logger.warn("Invalid Message ["+message+"]");
-			throw new Exception("Invalid Message ["+message+"]");
+		} else if (message.equalsIgnoreCase(OPERATIONS[2])) {
+			lightSwitch.blinkOn();
+		} else if (message.equalsIgnoreCase(OPERATIONS[3])) {
+			lightSwitch.blinkOff();
+		} else {
+			logger.warn("Invalid Message [" + message + "]");
+			throw new Exception("Invalid Message [" + message + "]");
 		}
 	}
 }
